@@ -3,4 +3,8 @@
 
 typedef struct treeType treeType;
 
+treeType * createTree(int qtt, char c);
+
+int * countCharacters(FILE * file);
+
 #endif

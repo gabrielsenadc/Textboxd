@@ -72,3 +72,19 @@ treeType * createTree(int qtt, char c){
     return tree;
 }
 
+int * countCharacters(FILE * file) {
+
+    rewind(file);
+
+    int * counter = (int *) calloc(256, sizeof(int));
+    char character = -1;
+
+    while(fscanf(file, "%c", &character) == 1) {
+        counter[(int)character]++;
+    }
+
+    rewind(file);
+
+return counter;
+}
+
