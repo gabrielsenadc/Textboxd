@@ -40,27 +40,68 @@ void insertTree(listType *list, treeType *tree){
     cell->tree = tree;
 
     cellType *aux = NULL;
+    int i = 0;
     for(aux = list->first; aux; aux = aux->next){
-        if(aux->tree->qtt < cell->tree->qtt) break;
+        i++;
+        if(aux->tree->qtt > cell->tree->qtt){
+            if(i == 1) list->first = cell;
+
+            cell->prior = aux->prior;
+            if(aux->prior) aux->prior->next = cell;
+
+            cell->next = aux;
+            aux->prior = cell;
+
+            break;
+        }
     }
 
     if(list->last == NULL) list->last = cell;
 
-    if(aux == NULL){
+    if(aux == NULL && i == 0){
         cell->prior = cell->next = NULL;
         list->first = cell;
-    } else {
-        cell->prior = aux->prior;
-        if(aux->prior) aux->prior->next = cell;
+    } 
 
-        cell->next = aux;
-        aux->prior = cell;
-    }
-
+    if(aux == NULL && i != 0){
+        cell->prior = list->last;
+        cell->next = NULL;
+        list->last->next = cell;
+        list->last = cell;
+    } 
 
 
 }
 
+treeType *removeFirstTree(listType *list){
+    cellType *aux = list->first;
+    treeType *tree = aux->tree;
+
+    list->first = aux->next;
+    if(aux->next) aux->next->prior = NULL;
+
+    free(aux);
+    return tree; 
+}
+
+
+void printList(listType *list){
+    for(cellType *cell = list->first; cell; cell = cell->next){
+        printTree(cell->tree);
+    }
+}
+
+void freeList(listType *list){
+    cellType *aux = NULL, *cell = list->first;
+
+    while(cell){
+        aux = cell;
+        cell = cell->next;
+        free(aux);
+    }
+
+    free(list);
+}
 
 treeType * createTree(int qtt, char c){
     treeType *tree = malloc(sizeof(treeType));
@@ -70,6 +111,22 @@ treeType * createTree(int qtt, char c){
     tree->right = tree->left = NULL;
 
     return tree;
+}
+
+void printTree(treeType *tree){
+    if(tree == NULL) return;
+
+    printf("%d ", tree->qtt);
+    printTree(tree->left);
+    printTree(tree->right);
+}
+
+void freeTree(treeType *tree){
+    if(tree == NULL) return;
+
+    freeTree(tree->left);
+    freeTree(tree->right);
+    free(tree);
 }
 
 int * countCharacters(FILE * file) {
