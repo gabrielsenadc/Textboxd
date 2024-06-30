@@ -30,5 +30,12 @@ int main(int argc, char ** argv) {
 
     fclose(file);
 
+    listType *list = createList(counter);
+
+    printList(list);
+
+    freeList(list);
+    free(counter);
+
 return 0;
 }

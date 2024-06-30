@@ -26,10 +26,13 @@ struct listType{
     cellType *last;
 };
 
-listType *createList(){
+listType *createList(int * vet){
     listType *list = malloc(sizeof(listType));
-
     list->first = list->last = NULL;
+
+    for(int i = 0; i < 256; i++){
+        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL));
+    }
 
     return list;
 }
@@ -97,18 +100,20 @@ void freeList(listType *list){
     while(cell){
         aux = cell;
         cell = cell->next;
+        freeTree(aux->tree);
         free(aux);
     }
 
     free(list);
 }
 
-treeType * createTree(int qtt, char c){
+treeType * createTree(int qtt, char c, treeType *left, treeType *right){
     treeType *tree = malloc(sizeof(treeType));
 
     tree->qtt = qtt;
     tree->c = c;
-    tree->right = tree->left = NULL;
+    tree->right = right;
+    tree->left = left;
 
     return tree;
 }
@@ -116,9 +121,11 @@ treeType * createTree(int qtt, char c){
 void printTree(treeType *tree){
     if(tree == NULL) return;
 
-    printf("%d ", tree->qtt);
+    printf(" <");
+    printf("%c:%d", tree->c, tree->qtt);
     printTree(tree->left);
     printTree(tree->right);
+    printf(">");
 }
 
 void freeTree(treeType *tree){
