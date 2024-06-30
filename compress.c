@@ -46,7 +46,7 @@ void insertTree(listType *list, treeType *tree){
     int i = 0;
     for(aux = list->first; aux; aux = aux->next){
         i++;
-        if(aux->tree->qtt > cell->tree->qtt){
+        if(aux->tree->qtt >= cell->tree->qtt){
             if(i == 1) list->first = cell;
 
             cell->prior = aux->prior;
@@ -150,5 +150,23 @@ int * countCharacters(FILE * file) {
     rewind(file);
 
 return counter;
+}
+
+int sizeList(listType *list){
+    int i = 0;
+    for(cellType *cell = list->first; cell; cell = cell->next) i++;
+
+    return i;
+}
+
+treeType *createBinaryTree(listType *list){
+    if(sizeList(list) <= 1) return removeFirstTree(list);
+
+    treeType *left = removeFirstTree(list);
+    treeType *right = removeFirstTree(list);
+    insertTree(list, createTree(left->qtt + right->qtt, '\0', left, right));
+
+    return createBinaryTree(list);
+
 }
 

@@ -31,9 +31,11 @@ int main(int argc, char ** argv) {
     fclose(file);
 
     listType *list = createList(counter);
+    treeType *tree = createBinaryTree(list);
 
-    printList(list);
+    printTree(tree);
 
+    freeTree(tree);
     freeList(list);
     free(counter);
 

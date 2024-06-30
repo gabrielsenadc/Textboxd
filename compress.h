@@ -22,4 +22,6 @@ void freeList(listType *list);
 
 int * countCharacters(FILE * file);
 
+treeType *createBinaryTree(listType *list);
+
 #endif
