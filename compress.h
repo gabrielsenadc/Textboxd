@@ -1,14 +1,16 @@
 #ifndef compress_h
 #define compress_h
 
+#include "bitmap.h"
+
 typedef struct treeType treeType;
 typedef struct listType listType;
 
-listType *createList(int * vet);
+listType * createList(int * vet);
 
 void insertTree(listType *list, treeType *tree);
 
-treeType *removeFirstTree(listType *list);
+treeType * removeFirstTree(listType *list);
 
 void printList(listType *list);
 
@@ -22,6 +24,10 @@ void freeList(listType *list);
 
 int * countCharacters(FILE * file);
 
-treeType *createBinaryTree(listType *list);
+treeType * createBinaryTree(listType *list);
+
+bitmap * returnCodedValue(treeType *tree, char c);
+
+bitmap * createBitMapContent(treeType *tree, FILE *file);
 
 #endif

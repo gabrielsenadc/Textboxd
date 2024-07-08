@@ -35,6 +35,9 @@ int main(int argc, char ** argv) {
 
     printTree(tree);
 
+    bitmap * bm = returnCodedValue(tree, 'b');
+    char * bits = bitmapGetContents(bm);
+    printf("\n%d\n", bitmapGetLength(bm));
     freeTree(tree);
     freeList(list);
     free(counter);

@@ -170,3 +170,30 @@ treeType *createBinaryTree(listType *list){
 
 }
 
+bitmap * returnCodedValue(treeType *tree, char c){
+    if(tree == NULL) return NULL;
+    if(c == tree->c) return bitmapInit(100);
+    bitmap * bitsLeft = returnCodedValue(tree->left, c);
+    if(bitsLeft != NULL){
+        bitmapAppendLeastSignificantBit(bitsLeft, 0);
+        return bitsLeft;
+    }
+    
+    bitmap * bitsRight = returnCodedValue(tree->left, c);
+    if(bitsRight != NULL){
+        bitmapAppendLeastSignificantBit(bitsRight, 0);
+        return bitsRight;
+    }
+
+    return NULL;
+}
+
+
+bitmap * createBitMapContent(treeType *tree, FILE *file){
+    bitmap * bits = bitmapInit(1000000);
+    char c = '\0';
+
+    while(fscanf(file, "%c", &c)){
+        
+    }
+}
