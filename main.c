@@ -28,19 +28,24 @@ int main(int argc, char ** argv) {
 
     int * counter = countCharacters(file);
 
-    fclose(file);
-
     listType *list = createList(counter);
     treeType *tree = createBinaryTree(list);
 
     printTree(tree);
 
-    bitmap * bm = returnCodedValue(tree, 'b');
-    char * bits = bitmapGetContents(bm);
-    printf("\n%d\n", bitmapGetLength(bm));
+    printf("\n");
+    bitmap * bm = createBitMapContent(tree, file);
+    for(int i = 0; i < bitmapGetLength(bm); i++){
+        printf("%d", bitmapGetBit(bm, i));
+    }
+    
+    printf("\n");
     freeTree(tree);
     freeList(list);
     free(counter);
+
+    fclose(file);
+    bitmapLibera(bm);
 
 return 0;
 }

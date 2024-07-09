@@ -170,6 +170,8 @@ treeType *createBinaryTree(listType *list){
 
 }
 
+
+//OBS: retorna o valor ao contrário, tratamento correto feito em createBitMapContent
 bitmap * returnCodedValue(treeType *tree, char c){
     if(tree == NULL) return NULL;
     if(c == tree->c) return bitmapInit(100);
@@ -179,9 +181,9 @@ bitmap * returnCodedValue(treeType *tree, char c){
         return bitsLeft;
     }
     
-    bitmap * bitsRight = returnCodedValue(tree->left, c);
+    bitmap * bitsRight = returnCodedValue(tree->right, c);
     if(bitsRight != NULL){
-        bitmapAppendLeastSignificantBit(bitsRight, 0);
+        bitmapAppendLeastSignificantBit(bitsRight, 1);
         return bitsRight;
     }
 
@@ -190,10 +192,18 @@ bitmap * returnCodedValue(treeType *tree, char c){
 
 
 bitmap * createBitMapContent(treeType *tree, FILE *file){
-    bitmap * bits = bitmapInit(1000000);
+    bitmap * bm = bitmapInit(1000000);
     char c = '\0';
 
-    while(fscanf(file, "%c", &c)){
-        
+    while(fscanf(file, "%c", &c) == 1){
+        bitmap * coded = returnCodedValue(tree, c);
+
+        for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
+            bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
+        }
+
+        bitmapLibera(coded);
     }
+
+    return bm;
 }

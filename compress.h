@@ -26,8 +26,6 @@ int * countCharacters(FILE * file);
 
 treeType * createBinaryTree(listType *list);
 
-bitmap * returnCodedValue(treeType *tree, char c);
-
 bitmap * createBitMapContent(treeType *tree, FILE *file);
 
 #endif
