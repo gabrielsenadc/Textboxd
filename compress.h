@@ -6,6 +6,8 @@
 typedef struct treeType treeType;
 typedef struct listType listType;
 
+//These functions need to be removed from here... (pov: the client doesn't need to know)
+
 listType * createList(int * vet);
 
 void insertTree(listType *list, treeType *tree);
@@ -27,5 +29,9 @@ int * countCharacters(FILE * file);
 treeType * createBinaryTree(listType *list);
 
 bitmap * createBitMapContent(treeType *tree, FILE *file);
+
+//Ends here
+
+void compress(FILE * file);
 
 #endif

@@ -207,3 +207,20 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
 
     return bm;
 }
+
+void compress(FILE * file, char * file_name) {
+
+    int * counter = countCharacters(file);
+
+    listType * list = createList(counter);
+    treeType * tree = createBinaryTree(list);
+
+    char compressed_file_name[1000];
+    sprintf(compressed_file_name, "./%s.comp", file_name);
+
+    FILE * compressed_file = NULL;
+    compressed_file = fopen(compressed_file_name, "wb");
+
+    //Treat the binary file
+
+}
