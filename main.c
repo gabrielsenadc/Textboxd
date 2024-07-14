@@ -38,6 +38,15 @@ int main(int argc, char ** argv) {
     for(int i = 0; i < bitmapGetLength(bm); i++){
         printf("%d", bitmapGetBit(bm, i));
     }
+    printf("\n");
+
+    printf("Orig Bitmap: ");
+    bitmap * bmTree = createTreeBitmap(tree);
+    printf("\nTree Bitmap Lenght: %d\n", bitmapGetLength(bmTree));
+    printf("Tree Bitmap: ");
+    for(int i = 0; i < bitmapGetLength(bmTree); i++) {
+        printf("%d", bitmapGetBit(bmTree, i));
+    }
     
     printf("\n");
     freeTree(tree);

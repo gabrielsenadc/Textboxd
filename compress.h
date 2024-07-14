@@ -30,8 +30,10 @@ treeType * createBinaryTree(listType *list);
 
 bitmap * createBitMapContent(treeType *tree, FILE *file);
 
+bitmap * createTreeBitmap(treeType * tree);
+
 //Ends here
 
-void compress(FILE * file);
+void compress(FILE * file, char * file_name);
 
 #endif

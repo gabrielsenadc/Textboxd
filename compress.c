@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "compress.h"
 
@@ -208,12 +209,67 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
     return bm;
 }
 
+void appendCodedCharacter(bitmap * bm, char c) {
+
+    int value = (int)c;
+    char binary[8];
+
+    for(int i = 7, j = 0; i >= 0; i--, j++) {
+
+        int div = pow(2, i);
+
+        if(value / div == 1) {
+            value -= div;
+            binary[j] = '1';
+            bitmapAppendLeastSignificantBit(bm, 1);
+        }
+        else {
+            binary[j] = '0';
+            bitmapAppendLeastSignificantBit(bm, 0);
+        }
+        printf("%d", bitmapGetBit(bm, bitmapGetLength(bm) - 1));
+
+    }
+
+    printf("\n");
+
+}
+
+void * insertPath(treeType * tree, bitmap * treeBitmap) {
+
+    if(tree != NULL) {
+        if(tree -> c == '\0') {
+            bitmapAppendLeastSignificantBit(treeBitmap, 0);
+            printf("%d\n", bitmapGetBit(treeBitmap, bitmapGetLength(treeBitmap) - 1));
+            insertPath(tree -> left, treeBitmap);
+            insertPath(tree -> right, treeBitmap);
+        }
+        else {
+            bitmapAppendLeastSignificantBit(treeBitmap, 1);
+            printf("%d:", bitmapGetBit(treeBitmap, bitmapGetLength(treeBitmap) - 1));
+            appendCodedCharacter(treeBitmap, tree -> c);
+        }
+    }
+
+}
+
+bitmap * createTreeBitmap(treeType * tree) {
+    
+    bitmap * treeBitmap = bitmapInit(1000000);
+
+    insertPath(tree, treeBitmap);
+
+return treeBitmap;
+}
+
 void compress(FILE * file, char * file_name) {
 
     int * counter = countCharacters(file);
 
     listType * list = createList(counter);
     treeType * tree = createBinaryTree(list);
+    bitmap * bmTree = createTreeBitmap(tree);
+    bitmap * bmFile = createBitMapContent(tree, file);
 
     char compressed_file_name[1000];
     sprintf(compressed_file_name, "./%s.comp", file_name);
@@ -221,6 +277,12 @@ void compress(FILE * file, char * file_name) {
     FILE * compressed_file = NULL;
     compressed_file = fopen(compressed_file_name, "wb");
 
-    //Treat the binary file
+    unsigned char * contentsTree = bitmapGetContents(bmTree);
+    fwrite(contentsTree, sizeof(unsigned char), (bitmapGetLength(bmTree)/8)+ 1, compressed_file);
+
+    unsigned char * contentsFile = bitmapGetContents(bmFile);
+    fwrite(contentsFile, sizeof(unsigned char), (bitmapGetLength(bmFile)/8)+ 1, compressed_file);
+
+    fclose(compressed_file);
 
 }
