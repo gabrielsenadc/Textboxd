@@ -134,4 +134,10 @@ void bitmapLibera (bitmap* bm){
     free (bm);
 }
 
+void bitmapSetContents(bitmap* bm, unsigned char* contents) {
+	bm -> contents = contents;
+}
+void bitmapSetLength(bitmap* bm, unsigned int lenght) {
+	bm -> length = lenght;
+}
 

@@ -36,6 +36,6 @@ bitmap * createTreeBitmap(treeType * tree);
 
 void compress(FILE * file, char * file_name);
 
-void decode(FILE * file, treeType *tree);
+void decompress(char * file_name);
 
 #endif

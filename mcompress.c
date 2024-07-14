@@ -6,29 +6,19 @@
 
 int main(int argc, char ** argv) {
 
-    /*
     if(argc <= 1) {
         printf("ERRO: Diretório de arquivo não informado!");
+        exit(1);
     }
 
-    FILE * file = fopen(argv[1], "r");
-    if(!file) {
+    FILE * bombom = fopen(argv[1], "r");
+    if(!bombom) {
         printf("ERRO: Não foi possível abrir o arquivo %s", argv[1]);
     }
-    */
 
-   char bombom[20];
-   sprintf(bombom, "%s./bombom.txt", "");
+    compress(bombom, argv[1]);
 
-    FILE * file = fopen(bombom, "r");
-    if(!file) {
-        printf("ERRO: Não foi possível abrir o arquivo %s", bombom);
-        return 1;
-    }
-
-    compress(file, "bombom.txt");
-
-    fclose(file);
+    fclose(bombom);
 
 return 0;
 }
