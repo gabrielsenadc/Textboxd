@@ -341,25 +341,25 @@ bitmap * readBinaryFileContent(FILE *file){
     return bm;
 }
 
-int decode_print(bitmap * bm, int * index, treeType * tree){
+int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file){
     if(tree->stop) return 0;
     if(tree->c != '\0'){
-        printf("%c", tree->c);
+        fprintf(file, "%c", tree -> c);
         return 1;
     }
 
     (*index)++;
-    if(bitmapGetBit(bm, *index - 1) == 1) return decode_print(bm, index, tree->right);
-    if(bitmapGetBit(bm, *index - 1) == 0) return decode_print(bm, index, tree->left);
+    if(bitmapGetBit(bm, *index - 1) == 1) return decode_print(bm, index, tree->right, file);
+    if(bitmapGetBit(bm, *index - 1) == 0) return decode_print(bm, index, tree->left, file);
 
 }
 
-void decode(FILE * file, treeType *tree){
+void decode(FILE * file, treeType *tree, FILE * decompressed_file){
     int index = 0, flag = 1;
     bitmap * bm = readBinaryFileContent(file);
 
     while(flag){
-        flag = decode_print(bm, &index, tree);
+        flag = decode_print(bm, &index, tree, decompressed_file);
     }
 
     bitmapLibera(bm);
@@ -427,6 +427,10 @@ void decompress(char * file_name) {
         printf("Não foi possível localizar o arquivo.\n");
         return;
     }
+
+    file_name[strlen(file_name) - 5] = '\0';
+    FILE * decompressed_file = fopen(file_name, "w");
+
     bitmap * bmTree = bitmapInit(1000000);
     unsigned char * contentsTree;
     unsigned char c;
@@ -442,7 +446,7 @@ void decompress(char * file_name) {
 
     treeType * dTree = recoverTreeBitmap(bmTree, &index);
 
-    decode(file, dTree);
+    decode(file, dTree, decompressed_file);
 
     fclose(file);
 
