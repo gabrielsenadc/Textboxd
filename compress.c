@@ -13,6 +13,7 @@ struct treeType{
     treeType *right;
     int qtt;
     char c;
+    int stop;
 };
 
 struct cellType{
@@ -27,6 +28,18 @@ struct listType{
     cellType *last;
 };
 
+treeType * createStop(){
+    treeType *tree = malloc(sizeof(treeType));
+
+    tree->qtt = 0;
+    tree->c = 'p';
+    tree->right = NULL;
+    tree->left = NULL;
+    tree->stop = 1;
+
+    return tree;
+}
+
 listType *createList(int * vet){
     listType *list = malloc(sizeof(listType));
     list->first = list->last = NULL;
@@ -34,6 +47,8 @@ listType *createList(int * vet){
     for(int i = 0; i < 256; i++){
         if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL));
     }
+
+    insertTree(list, createStop(5));
 
     return list;
 }
@@ -115,6 +130,7 @@ treeType * createTree(int qtt, char c, treeType *left, treeType *right){
     tree->c = c;
     tree->right = right;
     tree->left = left;
+    tree->stop = 0;
 
     return tree;
 }
@@ -173,16 +189,16 @@ treeType *createBinaryTree(listType *list){
 
 
 //OBS: retorna o valor ao contrário, tratamento correto feito em createBitMapContent
-bitmap * returnCodedValue(treeType *tree, char c){
+bitmap * returnCodedValue(treeType *tree, char c, int stop){
     if(tree == NULL) return NULL;
-    if(c == tree->c) return bitmapInit(100);
-    bitmap * bitsLeft = returnCodedValue(tree->left, c);
+    if((c == tree->c && !stop) || (tree->stop && stop)) return bitmapInit(100);
+    bitmap * bitsLeft = returnCodedValue(tree->left, c, stop);
     if(bitsLeft != NULL){
         bitmapAppendLeastSignificantBit(bitsLeft, 0);
         return bitsLeft;
     }
     
-    bitmap * bitsRight = returnCodedValue(tree->right, c);
+    bitmap * bitsRight = returnCodedValue(tree->right, c, stop);
     if(bitsRight != NULL){
         bitmapAppendLeastSignificantBit(bitsRight, 1);
         return bitsRight;
@@ -191,13 +207,12 @@ bitmap * returnCodedValue(treeType *tree, char c){
     return NULL;
 }
 
-
 bitmap * createBitMapContent(treeType *tree, FILE *file){
     bitmap * bm = bitmapInit(1000000);
     char c = '\0';
 
     while(fscanf(file, "%c", &c) == 1){
-        bitmap * coded = returnCodedValue(tree, c);
+        bitmap * coded = returnCodedValue(tree, c, 0);
 
         for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
             bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
@@ -205,6 +220,13 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
 
         bitmapLibera(coded);
     }
+
+    //Adiciona char de parada
+    bitmap * coded = returnCodedValue(tree, '\0', 1);
+    for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
+        bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
+    }
+    bitmapLibera(coded);
 
     return bm;
 }
@@ -227,11 +249,8 @@ void appendCodedCharacter(bitmap * bm, char c) {
             binary[j] = '0';
             bitmapAppendLeastSignificantBit(bm, 0);
         }
-        printf("%d", bitmapGetBit(bm, bitmapGetLength(bm) - 1));
 
     }
-
-    printf("\n");
 
 }
 
@@ -240,13 +259,11 @@ void * insertPath(treeType * tree, bitmap * treeBitmap) {
     if(tree != NULL) {
         if(tree -> c == '\0') {
             bitmapAppendLeastSignificantBit(treeBitmap, 0);
-            printf("%d\n", bitmapGetBit(treeBitmap, bitmapGetLength(treeBitmap) - 1));
             insertPath(tree -> left, treeBitmap);
             insertPath(tree -> right, treeBitmap);
         }
         else {
             bitmapAppendLeastSignificantBit(treeBitmap, 1);
-            printf("%d:", bitmapGetBit(treeBitmap, bitmapGetLength(treeBitmap) - 1));
             appendCodedCharacter(treeBitmap, tree -> c);
         }
     }
@@ -285,4 +302,48 @@ void compress(FILE * file, char * file_name) {
 
     fclose(compressed_file);
 
+    freeTree(tree);
+    freeList(list);
+    free(counter);
+
+    bitmapLibera(bmTree);
+    bitmapLibera(bmFile);
+
+}
+
+
+//Decompress functions
+
+bitmap * readBinaryFileContent(FILE *file){
+    bitmap * bm = bitmapInit(1000000);
+
+    unsigned char c;
+
+    while(fread(&c, sizeof(unsigned char), 1, file) == 1)
+        for(int i = 0; i < 8; i++) bitmapAppendLeastSignificantBit(bm, (c >> (7-(i%8))) & 0x01);
+    
+    return bm;
+}
+
+int decode_print(bitmap * bm, int * index, treeType * tree){
+    if(tree->stop) return 0;
+    if(tree->c != '\0'){
+        printf("%c", tree->c);
+        return 1;
+    }
+
+    (*index)++;
+    if(bitmapGetBit(bm, *index - 1) == 1) return decode_print(bm, index, tree->right);
+    if(bitmapGetBit(bm, *index - 1) == 0) return decode_print(bm, index, tree->left);
+
+}
+
+void decode(FILE * file, treeType *tree){
+    int index = 0, flag = 1;
+    bitmap * bm = readBinaryFileContent(file);
+    while(flag){
+        flag = decode_print(bm, &index, tree);
+    }
+
+    bitmapLibera(bm);
 }

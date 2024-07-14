@@ -26,35 +26,9 @@ int main(int argc, char ** argv) {
         return 1;
     }
 
-    int * counter = countCharacters(file);
-
-    listType *list = createList(counter);
-    treeType *tree = createBinaryTree(list);
-
-    printTree(tree);
-
-    printf("\n");
-    bitmap * bm = createBitMapContent(tree, file);
-    for(int i = 0; i < bitmapGetLength(bm); i++){
-        printf("%d", bitmapGetBit(bm, i));
-    }
-    printf("\n");
-
-    printf("Orig Bitmap: ");
-    bitmap * bmTree = createTreeBitmap(tree);
-    printf("\nTree Bitmap Lenght: %d\n", bitmapGetLength(bmTree));
-    printf("Tree Bitmap: ");
-    for(int i = 0; i < bitmapGetLength(bmTree); i++) {
-        printf("%d", bitmapGetBit(bmTree, i));
-    }
-    
-    printf("\n");
-    freeTree(tree);
-    freeList(list);
-    free(counter);
+    compress(file, "bombom.txt");
 
     fclose(file);
-    bitmapLibera(bm);
 
 return 0;
 }
