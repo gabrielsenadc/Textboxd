@@ -171,11 +171,11 @@ int * countCharacters(FILE * file) {
 
     rewind(file);
 
-    int * counter = (int *) calloc(256, sizeof(int));
-    char character = -1;
+    int * counter = (int *) calloc(512, sizeof(int));
+    unsigned char character = 0;
 
-    while(fscanf(file, "%c", &character) == 1) {
-        counter[(int)character]++;
+    while(fread(&character, sizeof(unsigned char), 1, file) == 1) {
+        counter[character]++;
     }
 
     rewind(file);
@@ -225,7 +225,7 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
     bitmap * bm = bitmapInit(1000000);
     char c = '\0';
 
-    while(fscanf(file, "%c", &c) == 1){
+    while(fread(&c, sizeof(unsigned char), 1, file) == 1){
         bitmap * coded = returnCodedValue(tree, c, 0);
 
         for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
@@ -344,7 +344,7 @@ bitmap * readBinaryFileContent(FILE *file){
 int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file){
     if(tree->stop) return 0;
     if(tree->c != '\0'){
-        fprintf(file, "%c", tree -> c);
+        fwrite(&(tree -> c), sizeof(unsigned char), 1, file);
         return 1;
     }
 
@@ -382,6 +382,7 @@ return (char)value;
 treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
     
     treeType * dTree = createEmptyTree();
+
 
     if(bitmapGetBit(bmTree, *index)) {
         char binaryChar[8];
@@ -429,7 +430,7 @@ void decompress(char * file_name) {
     }
 
     file_name[strlen(file_name) - 5] = '\0';
-    FILE * decompressed_file = fopen(file_name, "w");
+    FILE * decompressed_file = fopen(file_name, "wb");
 
     bitmap * bmTree = bitmapInit(1000000);
     unsigned char * contentsTree;
@@ -443,6 +444,7 @@ void decompress(char * file_name) {
         for(int i = 0; i < 8; i++) bitmapAppendLeastSignificantBit(bmTree, (c >> (7-(i%8))) & 0x01);
     }
     int index = 0;
+    printf("%d\n", bitmapGetLength(bmTree));
 
     treeType * dTree = recoverTreeBitmap(bmTree, &index);
 

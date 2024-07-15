@@ -11,7 +11,7 @@ int main(int argc, char ** argv) {
         exit(1);
     }
 
-    FILE * bombom = fopen(argv[1], "r");
+    FILE * bombom = fopen(argv[1], "rb");
     if(!bombom) {
         printf("ERRO: Não foi possível abrir o arquivo %s", argv[1]);
     }
