@@ -171,7 +171,7 @@ int * countCharacters(FILE * file) {
 
     rewind(file);
 
-    int * counter = (int *) calloc(512, sizeof(int));
+    int * counter = (int *) calloc(256, sizeof(int));
     unsigned char character = 0;
 
     while(fread(&character, sizeof(unsigned char), 1, file) == 1) {
@@ -223,7 +223,7 @@ bitmap * returnCodedValue(treeType *tree, char c, int stop){
 
 bitmap * createBitMapContent(treeType *tree, FILE *file){
     bitmap * bm = bitmapInit(1000000);
-    char c = '\0';
+    unsigned char c = '\0';
 
     while(fread(&c, sizeof(unsigned char), 1, file) == 1){
         bitmap * coded = returnCodedValue(tree, c, 0);
@@ -245,7 +245,7 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
     return bm;
 }
 
-void appendCodedCharacter(bitmap * bm, char c) {
+void appendCodedCharacter(bitmap * bm, unsigned char c) {
 
     int value = (int)c;
     char binary[8];
@@ -318,6 +318,16 @@ void compress(FILE * file, char * file_name) {
 
     fclose(compressed_file);
 
+    printTree(tree);
+    /*FILE * file2 = fopen("figura.png", "wb");
+
+    int index = 0, flag = 1;
+
+    while(flag){
+        flag = decode_print(bmFile, &index, tree, file2);
+    }*/
+
+
     freeTree(tree);
     freeList(list);
     free(counter);
@@ -342,8 +352,10 @@ bitmap * readBinaryFileContent(FILE *file){
 }
 
 int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file){
+    if(tree == NULL) return 0;
     if(tree->stop) return 0;
     if(tree->c != '\0'){
+        printf("%c", tree->c);
         fwrite(&(tree -> c), sizeof(unsigned char), 1, file);
         return 1;
     }
@@ -429,7 +441,7 @@ void decompress(char * file_name) {
         return;
     }
 
-    file_name[strlen(file_name) - 5] = '\0';
+    file_name[strlen(file_name) - 4] = '\0';
     FILE * decompressed_file = fopen(file_name, "wb");
 
     bitmap * bmTree = bitmapInit(1000000);
