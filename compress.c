@@ -29,6 +29,51 @@ struct listType{
     cellType *last;
 };
 
+// List Functions
+
+listType *createList(int * vet){
+    listType *list = malloc(sizeof(listType));
+    list->first = list->last = NULL;
+
+    for(int i = 0; i < 256; i++){
+        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL, 1));
+    }
+
+    insertTree(list, createStop());
+
+    return list;
+}
+
+void printList(listType *list){
+    for(cellType *cell = list->first; cell; cell = cell->next){
+        printTree(cell->tree);
+    }
+}
+
+int sizeList(listType *list){
+    int i = 0;
+    for(cellType *cell = list->first; cell; cell = cell->next) i++;
+
+    return i;
+}
+
+void freeList(listType *list){
+    cellType *aux = NULL, *cell = list->first;
+
+    while(cell){
+        aux = cell;
+        cell = cell->next;
+        freeTree(aux->tree);
+        free(aux);
+    }
+
+    free(list);
+}
+
+
+
+// Tree Functions
+
 treeType * createStop(){
     treeType *tree = malloc(sizeof(treeType));
 
@@ -42,17 +87,32 @@ treeType * createStop(){
     return tree;
 }
 
-listType *createList(int * vet){
-    listType *list = malloc(sizeof(listType));
-    list->first = list->last = NULL;
+treeType * createEmptyTree() {
 
-    for(int i = 0; i < 256; i++){
-        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL, 1));
-    }
+    treeType *tree = malloc(sizeof(treeType));
 
-    insertTree(list, createStop());
+    tree->qtt = 0;
+    tree->c = '\0';
+    tree->right = NULL;
+    tree->left = NULL;
+    tree->stop = 0;
+    tree->leaf = 0;
 
-    return list;
+    return tree;
+
+}
+
+treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf){
+    treeType *tree = malloc(sizeof(treeType));
+
+    tree->qtt = qtt;
+    tree->c = c;
+    tree->right = right;
+    tree->left = left;
+    tree->stop = 0;
+    tree->leaf = leaf;
+
+    return tree;
 }
 
 void insertTree(listType *list, treeType *tree){
@@ -105,58 +165,6 @@ treeType *removeFirstTree(listType *list){
     return tree; 
 }
 
-
-void printList(listType *list){
-    for(cellType *cell = list->first; cell; cell = cell->next){
-        printTree(cell->tree);
-    }
-}
-
-void freeList(listType *list){
-    cellType *aux = NULL, *cell = list->first;
-
-    while(cell){
-        aux = cell;
-        cell = cell->next;
-        freeTree(aux->tree);
-        free(aux);
-    }
-
-    free(list);
-}
-
-void setLeaf(treeType *tree){
-    tree->leaf = 1;
-}
-
-treeType * createEmptyTree() {
-
-    treeType *tree = malloc(sizeof(treeType));
-
-    tree->qtt = 0;
-    tree->c = '\0';
-    tree->right = NULL;
-    tree->left = NULL;
-    tree->stop = 0;
-    tree->leaf = 0;
-
-    return tree;
-
-}
-
-treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf){
-    treeType *tree = malloc(sizeof(treeType));
-
-    tree->qtt = qtt;
-    tree->c = c;
-    tree->right = right;
-    tree->left = left;
-    tree->stop = 0;
-    tree->leaf = leaf;
-
-    return tree;
-}
-
 void printTree(treeType *tree){
     if(tree == NULL) return;
 
@@ -175,6 +183,11 @@ void freeTree(treeType *tree){
     free(tree);
 }
 
+
+
+
+// Compress Functions
+
 int * countCharacters(FILE * file) {
 
     rewind(file);
@@ -189,13 +202,6 @@ int * countCharacters(FILE * file) {
     rewind(file);
 
 return counter;
-}
-
-int sizeList(listType *list){
-    int i = 0;
-    for(cellType *cell = list->first; cell; cell = cell->next) i++;
-
-    return i;
 }
 
 treeType *createBinaryTree(listType *list){
@@ -213,7 +219,7 @@ treeType *createBinaryTree(listType *list){
 //OBS: retorna o valor ao contrário, tratamento correto feito em createBitMapContent
 bitmap * returnCodedValue(treeType *tree, char c, int stop){
     if(tree == NULL) return NULL;
-    if((c == tree->c && !stop) || (tree->stop && stop)) return bitmapInit(100);
+    if(tree->leaf) if((c == tree->c && !stop) || (tree->stop && stop)) return bitmapInit(100);
     bitmap * bitsLeft = returnCodedValue(tree->left, c, stop);
     if(bitsLeft != NULL){
         bitmapAppendLeastSignificantBit(bitsLeft, 0);
@@ -279,7 +285,7 @@ void appendCodedCharacter(bitmap * bm, unsigned char c) {
 void * insertPath(treeType * tree, bitmap * treeBitmap) {
 
     if(tree != NULL) {
-        if(tree -> c == '\0') {
+        if(!tree->leaf) {
             bitmapAppendLeastSignificantBit(treeBitmap, 0);
             insertPath(tree -> left, treeBitmap);
             insertPath(tree -> right, treeBitmap);
@@ -346,6 +352,7 @@ void compress(FILE * file, char * file_name) {
     bitmapLibera(bmFile);
 
 }
+
 
 
 //Decompress functions

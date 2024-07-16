@@ -8,6 +8,8 @@ typedef struct listType listType;
 
 //These functions need to be removed from here... (pov: the client doesn't need to know)
 
+treeType * createStop();
+
 listType * createList(int * vet);
 
 void insertTree(listType *list, treeType *tree);
