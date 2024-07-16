@@ -14,6 +14,7 @@ struct treeType{
     int qtt;
     char c;
     int stop;
+    int leaf;
 };
 
 struct cellType{
@@ -36,6 +37,7 @@ treeType * createStop(){
     tree->right = NULL;
     tree->left = NULL;
     tree->stop = 1;
+    tree->leaf = 1;
 
     return tree;
 }
@@ -45,7 +47,7 @@ listType *createList(int * vet){
     list->first = list->last = NULL;
 
     for(int i = 0; i < 256; i++){
-        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL));
+        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL, 1));
     }
 
     insertTree(list, createStop());
@@ -123,6 +125,10 @@ void freeList(listType *list){
     free(list);
 }
 
+void setLeaf(treeType *tree){
+    tree->leaf = 1;
+}
+
 treeType * createEmptyTree() {
 
     treeType *tree = malloc(sizeof(treeType));
@@ -132,12 +138,13 @@ treeType * createEmptyTree() {
     tree->right = NULL;
     tree->left = NULL;
     tree->stop = 0;
+    tree->leaf = 0;
 
     return tree;
 
 }
 
-treeType * createTree(int qtt, char c, treeType *left, treeType *right){
+treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf){
     treeType *tree = malloc(sizeof(treeType));
 
     tree->qtt = qtt;
@@ -145,6 +152,7 @@ treeType * createTree(int qtt, char c, treeType *left, treeType *right){
     tree->right = right;
     tree->left = left;
     tree->stop = 0;
+    tree->leaf = leaf;
 
     return tree;
 }
@@ -195,7 +203,7 @@ treeType *createBinaryTree(listType *list){
 
     treeType *left = removeFirstTree(list);
     treeType *right = removeFirstTree(list);
-    insertTree(list, createTree(left->qtt + right->qtt, '\0', left, right));
+    insertTree(list, createTree(left->qtt + right->qtt, '\0', left, right, 0));
 
     return createBinaryTree(list);
 
@@ -319,13 +327,15 @@ void compress(FILE * file, char * file_name) {
     fclose(compressed_file);
 
     printTree(tree);
-    /*FILE * file2 = fopen("figura.png", "wb");
+    FILE * file2 = fopen("figura.png", "wb");
+
+    if(file2 == NULL) exit(1);
 
     int index = 0, flag = 1;
 
     while(flag){
         flag = decode_print(bmFile, &index, tree, file2);
-    }*/
+    }
 
 
     freeTree(tree);
@@ -354,7 +364,7 @@ bitmap * readBinaryFileContent(FILE *file){
 int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file){
     if(tree == NULL) return 0;
     if(tree->stop) return 0;
-    if(tree->c != '\0'){
+    if(tree->leaf == 1){
         printf("%c", tree->c);
         fwrite(&(tree -> c), sizeof(unsigned char), 1, file);
         return 1;
@@ -405,7 +415,7 @@ treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
         unsigned char c = decodeChar(binaryChar);
         (*index)++;
         if(c == 3) return createStop();
-        return createTree(0, c, NULL, NULL);
+        return createTree(0, c, NULL, NULL, 1);
     }
     else {
         (*index)++;

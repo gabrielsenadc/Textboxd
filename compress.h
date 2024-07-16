@@ -16,7 +16,7 @@ treeType * removeFirstTree(listType *list);
 
 void printList(listType *list);
 
-treeType * createTree(int qtt, char c, treeType *left, treeType *right);
+treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf);
 
 void printTree(treeType *tree);
 
