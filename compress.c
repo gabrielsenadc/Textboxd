@@ -219,7 +219,9 @@ treeType *createBinaryTree(listType *list){
 //OBS: retorna o valor ao contrário, tratamento correto feito em createBitMapContent
 bitmap * returnCodedValue(treeType *tree, char c, int stop){
     if(tree == NULL) return NULL;
-    if(tree->leaf) if((c == tree->c && !stop) || (tree->stop && stop)) return bitmapInit(100);
+    if(tree->leaf) if((c == tree->c && !stop) || (tree->stop && stop)) {
+        return bitmapInit(100);
+    }
     bitmap * bitsLeft = returnCodedValue(tree->left, c, stop);
     if(bitsLeft != NULL){
         bitmapAppendLeastSignificantBit(bitsLeft, 0);
@@ -307,6 +309,7 @@ bitmap * createTreeBitmap(treeType * tree) {
 return treeBitmap;
 }
 
+
 void compress(FILE * file, char * file_name) {
 
     int * counter = countCharacters(file);
@@ -327,6 +330,14 @@ void compress(FILE * file, char * file_name) {
     fwrite(&bmTreeSize, sizeof(short int), 1, compressed_file);
     fwrite(contentsTree, sizeof(unsigned char), (bitmapGetLength(bmTree)/8)+ 1, compressed_file);
 
+    bitmap * coded = returnCodedValue(tree, 3, 1);
+    bitmap * stop = bitmapInit(100);
+    for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
+        bitmapAppendLeastSignificantBit(stop, bitmapGetBit(coded, i));
+    }
+    unsigned char * contentStop = bitmapGetContents(stop);
+    fwrite(contentStop, sizeof(unsigned char), 2, compressed_file);
+
     unsigned char * contentsFile = bitmapGetContents(bmFile);
     fwrite(contentsFile, sizeof(unsigned char), (bitmapGetLength(bmFile)/8)+ 1, compressed_file);
 
@@ -339,9 +350,15 @@ void compress(FILE * file, char * file_name) {
 
     int index = 0, flag = 1;
 
+    decode_print(stop, &index, tree, file2);
+    exit(1);
+
     while(flag){
         flag = decode_print(bmFile, &index, tree, file2);
     }
+
+    index = 0;
+    setStop(stop, &index, tree);
 
 
     freeTree(tree);
@@ -371,8 +388,8 @@ bitmap * readBinaryFileContent(FILE *file){
 int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file){
     if(tree == NULL) return 0;
     if(tree->stop) return 0;
+    
     if(tree->leaf == 1){
-        printf("%c", tree->c);
         fwrite(&(tree -> c), sizeof(unsigned char), 1, file);
         return 1;
     }
@@ -421,7 +438,6 @@ treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
         }
         unsigned char c = decodeChar(binaryChar);
         (*index)++;
-        if(c == 3) return createStop();
         return createTree(0, c, NULL, NULL, 1);
     }
     else {
@@ -448,6 +464,18 @@ void printAll(FILE * file) {
     }
     printf("\n");
 
+}
+
+void setStop(bitmap *bm, int * index, treeType *tree){
+    if(tree == NULL) return;
+    if(tree->leaf == 1){
+        tree->stop = 1;
+        return;
+    }
+
+    (*index)++;
+    if(bitmapGetBit(bm, *index - 1) == 1) return setStop(bm, index, tree->right);
+    if(bitmapGetBit(bm, *index - 1) == 0) return setStop(bm, index, tree->left);
 }
 
 void decompress(char * file_name) {
@@ -477,11 +505,21 @@ void decompress(char * file_name) {
 
     treeType * dTree = recoverTreeBitmap(bmTree, &index);
 
+    bitmap * stop = bitmapInit(100);
+    for(int i = 0; i < 2; i++){
+        fread(&c, sizeof(unsigned char), 1, file);
+        for(int i = 0; i < 8; i++) bitmapAppendLeastSignificantBit(stop, (c >> (7-(i%8))) & 0x01);
+    }
+
+
+    int i = 0;
+    setStop(stop, &i, dTree);
+
     decode(file, dTree, decompressed_file);
 
     fclose(file);
 
     freeTree(dTree);
-    bitmapLibera(bmTree);    
+    bitmapLibera(bmTree);  
 
 }
