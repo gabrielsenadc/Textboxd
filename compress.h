@@ -30,7 +30,7 @@ int * countCharacters(FILE * file);
 
 treeType * createBinaryTree(listType *list);
 
-bitmap * createBitMapContent(treeType *tree, FILE *file);
+bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file);
 
 bitmap * createTreeBitmap(treeType * tree);
 

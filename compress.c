@@ -8,6 +8,8 @@
 typedef struct cellType cellType;
 typedef struct listType listType;
 
+#define MAXTAM 8
+
 struct treeType{
     treeType *left;
     treeType *right;
@@ -237,14 +239,20 @@ bitmap * returnCodedValue(treeType *tree, char c, int stop){
     return NULL;
 }
 
-bitmap * createBitMapContent(treeType *tree, FILE *file){
-    bitmap * bm = bitmapInit(1000000);
+bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
+    bitmap * bm = bitmapInit(MAXTAM);
     unsigned char c = '\0';
 
     while(fread(&c, sizeof(unsigned char), 1, file) == 1){
         bitmap * coded = returnCodedValue(tree, c, 0);
 
         for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
+            if(bitmapGetLength(bm) == MAXTAM) {
+                unsigned char * contentsFile = bitmapGetContents(bm);
+                fwrite(contentsFile, sizeof(unsigned char), (MAXTAM/8), compressed_file);
+                bitmapLibera(bm);
+                bm = bitmapInit(MAXTAM);
+            }
             bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
         }
 
@@ -254,6 +262,12 @@ bitmap * createBitMapContent(treeType *tree, FILE *file){
     //Adiciona char de parada
     bitmap * coded = returnCodedValue(tree, '\0', 1);
     for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
+        if(bitmapGetLength(bm) == MAXTAM) {
+                unsigned char * contentsFile = bitmapGetContents(bm);
+                fwrite(contentsFile, sizeof(unsigned char), (MAXTAM/8), compressed_file);
+                bitmapLibera(bm);
+                bm = bitmapInit(MAXTAM);
+        }
         bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
     }
     bitmapLibera(coded);
@@ -317,7 +331,6 @@ void compress(FILE * file, char * file_name) {
     listType * list = createList(counter);
     treeType * tree = createBinaryTree(list);
     bitmap * bmTree = createTreeBitmap(tree);
-    bitmap * bmFile = createBitMapContent(tree, file);
 
     char compressed_file_name[1000];
     sprintf(compressed_file_name, "./%s.comp", file_name);
@@ -338,27 +351,16 @@ void compress(FILE * file, char * file_name) {
     unsigned char * contentStop = bitmapGetContents(stop);
     fwrite(contentStop, sizeof(unsigned char), 2, compressed_file);
 
+
+    bitmap * bmFile = createBitMapContent(tree, file, compressed_file);
+
     unsigned char * contentsFile = bitmapGetContents(bmFile);
     fwrite(contentsFile, sizeof(unsigned char), (bitmapGetLength(bmFile)/8)+ 1, compressed_file);
 
     fclose(compressed_file);
 
     printTree(tree);
-    FILE * file2 = fopen("figura.png", "wb");
 
-    if(file2 == NULL) exit(1);
-
-    int index = 0, flag = 1;
-
-    decode_print(stop, &index, tree, file2);
-    exit(1);
-
-    while(flag){
-        flag = decode_print(bmFile, &index, tree, file2);
-    }
-
-    index = 0;
-    setStop(stop, &index, tree);
 
 
     freeTree(tree);
