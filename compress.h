@@ -34,7 +34,7 @@ bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file);
 
 bitmap * createTreeBitmap(treeType * tree);
 
-int decode_print(bitmap * bm, int * index, treeType * tree, FILE * file);
+int decode_print(bitmap ** bm, int * index, treeType * tree, FILE * file, FILE *compressed_file);
 
 void setStop(bitmap *bm, int * index, treeType *tree);
 
