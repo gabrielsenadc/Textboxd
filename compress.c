@@ -354,6 +354,9 @@ void compress(FILE * file, char * file_name) {
     fwrite(&size_stop, sizeof(short int), 1, compressed_file);
     fwrite(contentStop, sizeof(unsigned char), size_stop, compressed_file);
 
+    bitmapLibera(stop);
+    bitmapLibera(coded);
+
 
     bitmap * bmFile = createBitMapContent(tree, file, compressed_file);
 
@@ -453,6 +456,7 @@ treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
         }
         unsigned char c = decodeChar(binaryChar);
         (*index)++;
+        freeTree(dTree);
         return createTree(0, c, NULL, NULL, 1);
     }
     else {
@@ -520,7 +524,7 @@ void decompress(char * file_name) {
     treeType * dTree = recoverTreeBitmap(bmTree, &index);
 
     bitmap * stop = bitmapInit(100);
-    int stop_size;
+    int stop_size = 0;
     fread(&stop_size, sizeof(short int), 1, file);
     for(int i = 0; i < stop_size; i++){
         fread(&c, sizeof(unsigned char), 1, file);
@@ -530,12 +534,13 @@ void decompress(char * file_name) {
 
     int i = 0;
     setStop(stop, &i, dTree);
+    bitmapLibera(stop);
 
     decode(file, dTree, decompressed_file);
 
     fclose(file);
+    fclose(decompressed_file);
 
     freeTree(dTree);
     bitmapLibera(bmTree);  
-
 }
