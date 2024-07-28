@@ -33,6 +33,11 @@ struct listType{
 
 // List Functions
 
+/**
+ * Cria a Lista de arvores em ordem crescente de aparições de cada character para a codificação de HuffMan.
+ * @param vet o vetor da quantidade de aparições de cada character.
+ * @return a lista criada.
+ */
 listType *createList(int * vet){
     listType *list = malloc(sizeof(listType));
     list->first = list->last = NULL;
@@ -46,12 +51,11 @@ listType *createList(int * vet){
     return list;
 }
 
-void printList(listType *list){
-    for(cellType *cell = list->first; cell; cell = cell->next){
-        printTree(cell->tree);
-    }
-}
-
+/**
+ * Retorna o tamanho da lista.
+ * @param list a lista.
+ * @return tamanho da lista.
+ */
 int sizeList(listType *list){
     int i = 0;
     for(cellType *cell = list->first; cell; cell = cell->next) i++;
@@ -59,6 +63,10 @@ int sizeList(listType *list){
     return i;
 }
 
+/**
+ * Libera a memória dinâmica alocada para uma lista.
+ * @param list a lista.
+ */
 void freeList(listType *list){
     cellType *aux = NULL, *cell = list->first;
 
@@ -76,6 +84,10 @@ void freeList(listType *list){
 
 // Tree Functions
 
+/**
+ * Cria uma folha que representa a codificação do character de parada.
+ * @return a árvore de parada.
+ */
 treeType * createStop(){
     treeType *tree = malloc(sizeof(treeType));
 
@@ -89,6 +101,10 @@ treeType * createStop(){
     return tree;
 }
 
+/**
+ * Cria uma árvore vazia.
+ * @return a árvore.
+ */
 treeType * createEmptyTree() {
 
     treeType *tree = malloc(sizeof(treeType));
@@ -104,6 +120,15 @@ treeType * createEmptyTree() {
 
 }
 
+/**
+ * Cria uma árvore a partir dos parâmetros.
+ * @param qtt quantidade de vezes que o character aparece no texto.
+ * @param c o character.
+ * @param left a árvore da esquerda.
+ * @param right a árvore da direita.
+ * @param leaf se a árvore criada é uma folha.
+ * @return a árvore.
+ */
 treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf){
     treeType *tree = malloc(sizeof(treeType));
 
@@ -117,6 +142,11 @@ treeType * createTree(int qtt, char c, treeType *left, treeType *right, int leaf
     return tree;
 }
 
+/**
+ * Insere uma árvore na Lista em ordem crescente.
+ * @param list a Lista para adicionar a árvore.
+ * @param tree a árvore.
+ */
 void insertTree(listType *list, treeType *tree){
     cellType *cell = malloc(sizeof(cellType));
 
@@ -156,6 +186,12 @@ void insertTree(listType *list, treeType *tree){
 
 }
 
+/**
+ * Remove a primeira árvore da Lista, 
+ * ou seja, a árvore com menor quantidade de aparições no texto.
+ * @param list Lista a ser analisada.
+ * @return a primeira árvore da Lista.
+ */
 treeType *removeFirstTree(listType *list){
     cellType *aux = list->first;
     treeType *tree = aux->tree;
@@ -177,6 +213,10 @@ void printTree(treeType *tree){
     printf(">");
 }
 
+/**
+ * Libera a árvore recursivamente
+ * @param tree árvore a ser liberada.
+ */
 void freeTree(treeType *tree){
     if(tree == NULL) return;
 
@@ -206,6 +246,11 @@ int * countCharacters(FILE * file) {
 return counter;
 }
 
+/**
+ * Cria a árvore binária de codificação de HuffMan.
+ * @param list Lista a ser execurado o processo de para a codificação
+ * @return a árvore.
+ */
 treeType *createBinaryTree(listType *list){
     if(sizeList(list) <= 1) return removeFirstTree(list);
 
@@ -219,6 +264,13 @@ treeType *createBinaryTree(listType *list){
 
 
 //OBS: retorna o valor ao contrário, tratamento correto feito em createBitMapContent
+/**
+ * Codifica um character por meio de uma árvore de codificação binária.
+ * @param tree árvore que será realizada a busca do character.
+ * @param c character a ser codificado.
+ * @param stop se o character a ser codificado é de parada ou não
+ * @return bitmap da codificação ao contrário.
+ */
 bitmap * returnCodedValue(treeType *tree, char c, int stop){
     if(tree == NULL) return NULL;
     if(tree->leaf) if((c == tree->c && !stop) || (tree->stop && stop)) {
@@ -239,6 +291,15 @@ bitmap * returnCodedValue(treeType *tree, char c, int stop){
     return NULL;
 }
 
+/**
+ * Cria o bitmap que contém o texto coddificado (content),
+ * a medida que o bitmap de content chega no Tamanho Máximo,
+ * o bitmap é escrito no arquivo comprimido e cria um bitmap novo.
+ * @param tree arvore de codificação binária a ser usada.
+ * @param file arquivo a ser comprimido.
+ * @param compressed_file arquivo comprimido, onde o content será adicionado.
+ * @return o último bitmap de content a ser codificado.
+ */
 bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
     bitmap * bm = bitmapInit(MAXTAM);
     unsigned char c = '\0';
@@ -269,7 +330,6 @@ bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
                 bm = bitmapInit(MAXTAM);
         }
         bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
-        printf("%d", bitmapGetBit(coded, i));
     }
     bitmapLibera(coded);
 
@@ -365,8 +425,6 @@ void compress(FILE * file, char * file_name) {
 
     fclose(compressed_file);
 
-    printTree(tree);
-
 
 
     freeTree(tree);
@@ -382,8 +440,13 @@ void compress(FILE * file, char * file_name) {
 
 //Decompress functions
 
+/**
+ * Lê, no arquivo a ser descompactado, até o Tamanho Máximo do bitmap
+ * @param file arquivo a ser lido.
+ * @return bitmap com o content lido.
+ */
 bitmap * readBinaryFileContent(FILE *file){
-    bitmap * bm = bitmapInit(1000000);
+    bitmap * bm = bitmapInit(MAXTAM);
 
     unsigned char c;
 
@@ -394,6 +457,15 @@ bitmap * readBinaryFileContent(FILE *file){
     return bm;
 }
 
+/**
+ * Decodifica e printa um character.
+ * @param bm um ponteiro de ponteiro do bitmap com o content que está sendo usado na decodificação no momento.
+ * @param index um ponteiro do numero que representa a posição no bitmap em que está sendo realizada a tradução.
+ * @param tree árvore usada para a decodificação.
+ * @param file arquivo descompactado.
+ * @param compressed_file arquivo a ser descompactado.
+ * @return 1 se printou um character e 0 se achou o character de parada.
+ */
 int decode_print(bitmap ** bm, int * index, treeType * tree, FILE * file, FILE *compressed_file){
     if(tree == NULL) return 0;
     if(tree->stop) return 0;
@@ -416,6 +488,12 @@ int decode_print(bitmap ** bm, int * index, treeType * tree, FILE * file, FILE *
 
 }
 
+/**
+ * Decodifica um arquivo compactado, gerando o novo arquivo descompactado.
+ * @param file arquivo compactado.
+ * @param tree árvore binária de codificação a ser usada para decodificar.
+ * @param decompressed_file arquivo descompactado.
+ */
 void decode(FILE * file, treeType *tree, FILE * decompressed_file){
     int index = 0, flag = 1;
     bitmap * content = readBinaryFileContent(file);
@@ -485,6 +563,12 @@ void printAll(FILE * file) {
 
 }
 
+/**
+ * Atribui uma das folhas da árvore de codificação a flag de parada.
+ * @param bm bitmap que possui a codificação do character de parada.
+ * @param index ponteiro do número que representa a posição atual do bitmpa
+ * @param tree árvore de codificação binária.
+ */
 void setStop(bitmap *bm, int * index, treeType *tree){
     if(tree == NULL) return;
     if(tree->leaf == 1){
