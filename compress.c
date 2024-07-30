@@ -7,6 +7,7 @@
 
 typedef struct cellType cellType;
 typedef struct listType listType;
+typedef struct treeType treeType;
 
 #define MAXTAM 1000000
 
@@ -30,57 +31,6 @@ struct listType{
     cellType *first;
     cellType *last;
 };
-
-// List Functions
-
-/**
- * Cria a Lista de arvores em ordem crescente de aparições de cada character para a codificação de HuffMan.
- * @param vet o vetor da quantidade de aparições de cada character.
- * @return a lista criada.
- */
-listType *createList(int * vet){
-    listType *list = malloc(sizeof(listType));
-    list->first = list->last = NULL;
-
-    for(int i = 0; i < 256; i++){
-        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL, 1));
-    }
-
-    insertTree(list, createStop());
-
-    return list;
-}
-
-/**
- * Retorna o tamanho da lista.
- * @param list a lista.
- * @return tamanho da lista.
- */
-int sizeList(listType *list){
-    int i = 0;
-    for(cellType *cell = list->first; cell; cell = cell->next) i++;
-
-    return i;
-}
-
-/**
- * Libera a memória dinâmica alocada para uma lista.
- * @param list a lista.
- */
-void freeList(listType *list){
-    cellType *aux = NULL, *cell = list->first;
-
-    while(cell){
-        aux = cell;
-        cell = cell->next;
-        freeTree(aux->tree);
-        free(aux);
-    }
-
-    free(list);
-}
-
-
 
 // Tree Functions
 
@@ -203,6 +153,10 @@ treeType *removeFirstTree(listType *list){
     return tree; 
 }
 
+/**
+ * Imprime a árvore;
+ * @param tree a árvore a ser impressa.
+ */
 void printTree(treeType *tree){
     if(tree == NULL) return;
 
@@ -225,11 +179,63 @@ void freeTree(treeType *tree){
     free(tree);
 }
 
+// List Functions
 
+/**
+ * Cria a Lista de arvores em ordem crescente de aparições de cada character para a codificação de HuffMan.
+ * @param vet o vetor da quantidade de aparições de cada character.
+ * @return a lista criada.
+ */
+listType *createList(int * vet){
+    listType *list = malloc(sizeof(listType));
+    list->first = list->last = NULL;
 
+    for(int i = 0; i < 256; i++){
+        if(vet[i] != 0) insertTree(list, createTree(vet[i], (char)i, NULL, NULL, 1));
+    }
+
+    insertTree(list, createStop());
+
+    return list;
+}
+
+/**
+ * Retorna o tamanho da lista.
+ * @param list a lista.
+ * @return tamanho da lista.
+ */
+int sizeList(listType *list){
+    int i = 0;
+    for(cellType *cell = list->first; cell; cell = cell->next) i++;
+
+    return i;
+}
+
+/**
+ * Libera a memória dinâmica alocada para uma lista.
+ * @param list a lista.
+ */
+void freeList(listType *list){
+    cellType *aux = NULL, *cell = list->first;
+
+    while(cell){
+        aux = cell;
+        cell = cell->next;
+        freeTree(aux->tree);
+        free(aux);
+    }
+
+    free(list);
+}
 
 // Compress Functions
 
+/**
+ * Conta a quantidade de aparições de um determinado byte (em forma de caractere)
+ * e retorna o vetor com a contagem
+ * @param file arquivo que contém os bytes.
+ * @return vetor de 256 posições com a contagem de frequência dos bytes.
+*/
 int * countCharacters(FILE * file) {
 
     rewind(file);
@@ -336,6 +342,12 @@ bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
     return bm;
 }
 
+
+/**
+ * Insere no bitmap o valor binário do byte/caractere
+ * @param bm bitmap
+ * @param c byte/caractere
+*/
 void appendCodedCharacter(bitmap * bm, unsigned char c) {
 
     int value = (int)c;
@@ -359,7 +371,14 @@ void appendCodedCharacter(bitmap * bm, unsigned char c) {
 
 }
 
-void * insertPath(treeType * tree, bitmap * treeBitmap) {
+/**
+ * Codifica uma árvore binária para um bitmap
+ * Os nós são representados como 0 e as folhas como 1
+ * A cada folha encontrada, o bitmap recebe um byte/caractere
+ * @param tree árvore a ser codificada
+ * @param treeBitmap bitmap onde será adicionada a árvore
+*/
+void insertPath(treeType * tree, bitmap * treeBitmap) {
 
     if(tree != NULL) {
         if(!tree->leaf) {
@@ -375,6 +394,12 @@ void * insertPath(treeType * tree, bitmap * treeBitmap) {
 
 }
 
+/**
+ * Inicializa o bitmap da árvore e insere os respectivos
+ * dados no bitmap
+ * @param tree árvore a ser codificada para bitmap
+ * @return bitmap codificado da árvore
+*/
 bitmap * createTreeBitmap(treeType * tree) {
     
     bitmap * treeBitmap = bitmapInit(1000000);
@@ -384,7 +409,11 @@ bitmap * createTreeBitmap(treeType * tree) {
 return treeBitmap;
 }
 
-
+/**
+ * Compacta um arquivo atráves da codificação de Huffman
+ * @param file arquivo que se deseja compactar
+ * @param file_name nome do arquivo
+*/
 void compress(FILE * file, char * file_name) {
 
     int * counter = countCharacters(file);
@@ -507,6 +536,12 @@ void decode(FILE * file, treeType *tree, FILE * decompressed_file){
     bitmapLibera(*bm);
 }
 
+/**
+ * Recupera o byte/caractere dado em um vetor de caracteres
+ * formada por caracteres 0 e 1
+ * @param binary vetor de caracteres com os valores
+ * @return byte/caractere decodificado
+*/
 char decodeChar(char * binary) {
 
     int value = 0;
@@ -521,6 +556,13 @@ char decodeChar(char * binary) {
 return (char)value;
 }
 
+/**
+ * Recupera uma árvore binária a partir
+ * de um bitmap codificado
+ * @param bmTree bitmap com os dados
+ * @param index posição do vetor que avança no bitmap
+ * @return árvore binária reconstruída
+*/
 treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
     
     treeType * dTree = createEmptyTree();
@@ -546,6 +588,11 @@ treeType * recoverTreeBitmap(bitmap * bmTree, int * index) {
 return dTree;
 }
 
+/**
+ * Imprime o arquivo binário INTEIRO no terminal
+ * Utilizada para debug
+ * @param file arquivo binário
+*/
 void printAll(FILE * file) {
 
     unsigned char c;
@@ -581,6 +628,10 @@ void setStop(bitmap *bm, int * index, treeType *tree){
     if(bitmapGetBit(bm, *index - 1) == 0) return setStop(bm, index, tree->left);
 }
 
+/**
+ * Descompacta um arquivo compactado do tipo ".comp"
+ * @param file_name nome do arquivo a ser descompactado
+*/
 void decompress(char * file_name) {
 
     FILE * file = fopen(file_name, "rb");
@@ -589,7 +640,7 @@ void decompress(char * file_name) {
         return;
     }
 
-    file_name[strlen(file_name) - 4] = '\0';
+    file_name[strlen(file_name) - 5] = '\0';
     FILE * decompressed_file = fopen(file_name, "wb");
 
     bitmap * bmTree = bitmapInit(1000000);
