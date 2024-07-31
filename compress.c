@@ -411,10 +411,11 @@ return treeBitmap;
 
 /**
  * Compacta um arquivo atráves da codificação de Huffman
- * @param file arquivo que se deseja compactar
- * @param file_name nome do arquivo
+ * @param file_name nome do arquivo a ser compactado
 */
-void compress(FILE * file, char * file_name) {
+void compress(char * file_name) {
+
+    FILE * file = fopen(file_name, "rb");
 
     int * counter = countCharacters(file);
 
@@ -462,6 +463,8 @@ void compress(FILE * file, char * file_name) {
 
     bitmapLibera(bmTree);
     bitmapLibera(bmFile);
+
+    fclose(file);
 
 }
 

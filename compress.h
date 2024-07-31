@@ -5,10 +5,9 @@
 
 /**
  * Compacta um arquivo, gerando um arquivo .comp com as informações compactadas.
- * @param file arquivo a ser comprimido.
- * @param file_name nome do arquivo a ser comprimido.
+ * @param file_name nome do arquivo a ser compactado.
  */
-void compress(FILE * file, char * file_name);
+void compress(char * file_name);
 
 /**
  * Descompacta um arquivo .comp, gerando o arquivo normal
