@@ -416,6 +416,10 @@ return treeBitmap;
 void compress(char * file_name) {
 
     FILE * file = fopen(file_name, "rb");
+    if(!file) {
+        printf("Erro ao abrir o arquivo a ser compactado.\n");
+        exit(1);
+    }
 
     int * counter = countCharacters(file);
 
