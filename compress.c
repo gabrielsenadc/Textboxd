@@ -8,8 +8,20 @@
 typedef struct cellType cellType;
 typedef struct listType listType;
 typedef struct treeType treeType;
+typedef struct hashType hashType;
+typedef struct charby charby;
 
 #define MAXTAM 1000000
+
+struct charby{
+    int count;
+    bitmap * path;
+};
+
+struct hashType{
+    charby ** tab;
+    unsigned int size;
+};
 
 struct treeType{
     treeType *left;
@@ -407,6 +419,41 @@ bitmap * createTreeBitmap(treeType * tree) {
     insertPath(tree, treeBitmap);
 
 return treeBitmap;
+}
+
+// Charby Functions
+
+int get_count(charby * cb) {
+    return cb -> count;
+}
+
+bitmap * get_bitmap(charby * cb) {
+    return cb -> path;
+}
+
+void inc_count(charby * cb) {
+    cb -> count++;
+}
+
+charby * createCharby(int value, int count, treeType * tree) {
+
+    charby * cb = (charby *) calloc(1, sizeof(charby));
+    cb -> count = count;
+    cb -> path = returnCodedValue(tree, value, 0);
+
+return cb;
+}
+
+charby ** fillCharby(int * vet, treeType * tree) {
+
+    charby ** cb = (charby **) calloc(256, sizeof(charby *));
+    for(int i = 0; i < 256; i++) {
+        if(vet[i]) {
+            cb[i] = createCharby(i, vet[i], tree);
+        }
+    }
+
+return cb;
 }
 
 /**
