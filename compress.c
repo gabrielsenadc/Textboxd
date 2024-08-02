@@ -309,6 +309,80 @@ bitmap * returnCodedValue(treeType *tree, char c, int stop){
     return NULL;
 }
 
+// Charby Functions
+/**
+ * O charby será usado como uma pseudo tabela hash para
+ * termos acesso direto a um valor codificado em bitmap
+*/
+
+
+/**
+ * Retorna a contagem de frequência
+ * @param cb o charby
+ * @return sua contagem
+*/
+int get_count(charby * cb) {
+    return cb -> count;
+}
+
+/**
+ * Retorna o bitmap do charby
+ * @param cb o charby
+ * @return seu bitmap
+*/
+bitmap * get_bitmap(charby * cb) {
+    return cb -> path;
+}
+
+/**
+ * Cria um charby
+ * @param value seu valor ASCII
+ * @param count número de ocorrências do byte
+ * @param tree a árvore onde o bitmap do charby está
+*/
+charby * createCharby(int value, int count, treeType * tree) {
+
+    charby * cb = (charby *) calloc(1, sizeof(charby));
+    cb -> count = count;
+    cb -> path = returnCodedValue(tree, value, 0);
+
+return cb;
+}
+
+/**
+ * Preenche um vetor de charby com ocorrências e caminhos de bitmap
+ * @param vet o vetor com a contagem de ocorrências
+ * @param tree a árvore com o caminho de bitmap
+ * @return vetor de charby
+*/
+charby ** fillCharby(int * vet, treeType * tree) {
+
+    charby ** cb = (charby **) calloc(256, sizeof(charby *));
+    for(int i = 0; i < 256; i++) {
+        if(vet[i]) {
+            cb[i] = createCharby(i, vet[i], tree);
+        }
+    }
+
+return cb;
+}
+
+/**
+ * Libera um vetor de charby
+ * @param cb o vetor
+*/
+void freeCharby(charby ** cb) {
+
+    for(int i = 0; i < 256; i++) {
+        if(cb[i]) {
+            bitmapLibera(cb[i] -> path);
+            free(cb[i]);
+        }
+    }
+    free(cb);
+
+}
+
 /**
  * Cria o bitmap que contém o texto coddificado (content),
  * a medida que o bitmap de content chega no Tamanho Máximo,
@@ -318,13 +392,12 @@ bitmap * returnCodedValue(treeType *tree, char c, int stop){
  * @param compressed_file arquivo comprimido, onde o content será adicionado.
  * @return o último bitmap de content a ser codificado.
  */
-bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
+bitmap * createBitMapContent(treeType * tree, FILE *file, FILE *compressed_file, charby ** cb){
     bitmap * bm = bitmapInit(MAXTAM);
     unsigned char c = '\0';
 
     while(fread(&c, sizeof(unsigned char), 1, file) == 1){
-        bitmap * coded = returnCodedValue(tree, c, 0);
-
+        bitmap * coded = get_bitmap(cb[(int)c]);
         for(int i = bitmapGetLength(coded) - 1; i >= 0; i--){
             if(bitmapGetLength(bm) == MAXTAM) {
                 unsigned char * contentsFile = bitmapGetContents(bm);
@@ -334,8 +407,7 @@ bitmap * createBitMapContent(treeType *tree, FILE *file, FILE *compressed_file){
             }
             bitmapAppendLeastSignificantBit(bm, bitmapGetBit(coded, i));
         }
-
-        bitmapLibera(coded);
+        
     }
 
     //Adiciona char de parada
@@ -421,41 +493,6 @@ bitmap * createTreeBitmap(treeType * tree) {
 return treeBitmap;
 }
 
-// Charby Functions
-
-int get_count(charby * cb) {
-    return cb -> count;
-}
-
-bitmap * get_bitmap(charby * cb) {
-    return cb -> path;
-}
-
-void inc_count(charby * cb) {
-    cb -> count++;
-}
-
-charby * createCharby(int value, int count, treeType * tree) {
-
-    charby * cb = (charby *) calloc(1, sizeof(charby));
-    cb -> count = count;
-    cb -> path = returnCodedValue(tree, value, 0);
-
-return cb;
-}
-
-charby ** fillCharby(int * vet, treeType * tree) {
-
-    charby ** cb = (charby **) calloc(256, sizeof(charby *));
-    for(int i = 0; i < 256; i++) {
-        if(vet[i]) {
-            cb[i] = createCharby(i, vet[i], tree);
-        }
-    }
-
-return cb;
-}
-
 /**
  * Compacta um arquivo atráves da codificação de Huffman
  * @param file_name nome do arquivo a ser compactado
@@ -498,8 +535,9 @@ void compress(char * file_name) {
     bitmapLibera(stop);
     bitmapLibera(coded);
 
-
-    bitmap * bmFile = createBitMapContent(tree, file, compressed_file);
+    charby ** cb = fillCharby(counter, tree);
+    bitmap * bmFile = createBitMapContent(tree, file, compressed_file, cb);
+    freeCharby(cb);
 
     unsigned char * contentsFile = bitmapGetContents(bmFile);
     fwrite(contentsFile, sizeof(unsigned char), (bitmapGetLength(bmFile)/8)+ 1, compressed_file);
