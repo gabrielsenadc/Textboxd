@@ -26,7 +26,7 @@ Os arquivos compactados pertencem a extensão .comp e possuem taxa de compressã
    ```
 4. Compacte ou descompacte um arquivo
 
-  ```sh
-  ./compacta <nome-do-seu-arquivo>
-  ./descompacta <nome-do-arquivo-compactado>
-  ```
+   ```sh
+   ./compacta <nome-do-seu-arquivo>
+   ./descompacta <nome-do-arquivo-compactado>
+   ```
