@@ -22,7 +22,6 @@ Os arquivos compactados pertencem a extensão .comp e possuem taxa de compressã
 
    ```sh
    make compress
-   make decompress
    ```
 4. Compacte ou descompacte um arquivo
 
