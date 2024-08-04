@@ -1,3 +1,11 @@
+/**
+ * Trabalho 2 de Estrutura de Dados
+ * Professora: Patrícia Dockhorn Costa
+ * Alunos:
+ * Eduardo Silva Guimarães
+ * Gabriel Sena da Cunha
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +16,6 @@
 typedef struct cellType cellType;
 typedef struct listType listType;
 typedef struct treeType treeType;
-typedef struct hashType hashType;
 typedef struct charby charby;
 
 #define MAXTAM 1000000
@@ -16,11 +23,6 @@ typedef struct charby charby;
 struct charby{
     int count;
     bitmap * path;
-};
-
-struct hashType{
-    charby ** tab;
-    unsigned int size;
 };
 
 struct treeType{

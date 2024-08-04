@@ -1,4 +1,10 @@
-//Essa main é um teste para o contador de arquivos 
+/**
+ * Trabalho 2 de Estrutura de Dados
+ * Professora: Patrícia Dockhorn Costa
+ * Alunos:
+ * Eduardo Silva Guimarães
+ * Gabriel Sena da Cunha
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

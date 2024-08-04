@@ -1,3 +1,11 @@
+/**
+ * Trabalho 2 de Estrutura de Dados
+ * Professora: Patrícia Dockhorn Costa
+ * Alunos:
+ * Eduardo Silva Guimarães
+ * Gabriel Sena da Cunha
+ */
+
 #ifndef compress_h
 #define compress_h
 
